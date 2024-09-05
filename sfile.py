@@ -42,4 +42,4 @@ def main():
 
         # Отправляем файл в Telegram
         send_file_to_telegram(file_path)
-        print(f"Файл {file_name} отправлен
+        print(f"Файл {file_name} отправлен")
