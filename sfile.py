@@ -1,7 +1,7 @@
 import os
 import telebot
-import subprocess
 import getpass
+import subprocess
 
 # Ваш токен бота Telegram
 API_TOKEN = 'ВАШ_ТЕЛЕГРАМ_ТОКЕН'
@@ -11,7 +11,6 @@ bot = telebot.TeleBot(API_TOKEN)
 
 def find_file(file_name):
     """Функция для поиска файла по имени"""
-    # Начинаем поиск с корневой директории
     for root, dirs, files in os.walk('/'):
         if file_name in files:
             return os.path.join(root, file_name)
@@ -19,8 +18,12 @@ def find_file(file_name):
 
 def send_file_to_telegram(file_path):
     """Функция для отправки файла в Telegram"""
-    with open(file_path, 'rb') as file:
-        bot.send_document(CHAT_ID, file)
+    try:
+        with open(file_path, 'rb') as file:
+            bot.send_document(CHAT_ID, file)
+        print(f"Файл {file_path} успешно отправлен в Telegram.")
+    except Exception as e:
+        print(f"Ошибка при отправке файла в Telegram: {e}")
 
 def delete_file(file_path):
     """Функция для удаления файла"""
@@ -31,15 +34,36 @@ def delete_file(file_path):
         print(f"Ошибка при удалении файла: {e}")
 
 def main():
-    # Получаем имя файла от пользователя
-    file_name = input("Введите имя файла для поиска: ")
+    while True:
+        # Получаем имя файла от пользователя
+        file_name = input("Введите имя файла для поиска (или 'exit' для выхода): ")
 
-    # Ищем файл
-    file_path = find_file(file_name)
+        if file_name.lower() == 'exit':
+            print("Завершение работы.")
+            break
 
-    if file_path:
-        print(f"Файл найден: {file_path}")
+        # Ищем файл
+        file_path = find_file(file_name)
 
-        # Отправляем файл в Telegram
-        send_file_to_telegram(file_path)
-        print(f"Файл {file_name} отправлен")
+        if file_path:
+            print(f"Файл найден: {file_path}")
+
+            # Отправляем файл в Telegram
+            send_file_to_telegram(file_path)
+
+            # Спрашиваем пользователя, нужно ли удалить файл
+            delete_choice = input(f"Хотите удалить файл {file_path}? (y/n): ").lower()
+
+            if delete_choice == 'y':
+                delete_file(file_path)
+            else:
+                print("Файл не был удалён.")
+        else:
+            print(f"Файл с именем {file_name} не найден.")
+
+if __name__ == "__main__":
+    if getpass.getuser() != 'root':
+        # Проверка на запуск от sudo
+        print("Пожалуйста, запустите скрипт от имени суперпользователя (sudo).")
+    else:
+        main()
